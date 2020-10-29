@@ -22,16 +22,16 @@ public class EmployeePayroll {
     @Override
     public String toString() {
         return "EmployeePayroll { company_id : " + company_id + ", " +
-                                 " emp_id : " + emp_id + ", " +
-                                 " name : " + name + ", " +
-                                 " phone : " + phone + ", " +
-                                 " address : " + address + ", " +
-                                 " gender : " + gender + ", " +
-                                 " date : " + start + ", " +
-                                 " basic_pay : " + basic_pay + ", " +
-                                 " deductions : " + deductions + ", " +
-                                 " taxable_pay : " + taxable_pay + ", " +
-                                 " tax : " + tax + ", " +
-                                 " net_pay: " + net_pay + " }";
+                " emp_id : " + emp_id + ", " +
+                " name : " + name + ", " +
+                " phone : " + phone + ", " +
+                " address : " + address + ", " +
+                " gender : " + gender + ", " +
+                " date : " + start + ", " +
+                " basic_pay : " + basic_pay + ", " +
+                " deductions : " + deductions + ", " +
+                " taxable_pay : " + taxable_pay + ", " +
+                " tax : " + tax + ", " +
+                " net_pay: " + net_pay + " }";
     }
 }

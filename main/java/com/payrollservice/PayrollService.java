@@ -9,13 +9,6 @@ import java.util.Properties;
 public class PayrollService {
     HashMap<Integer, EmployeePayroll> employeePayrollMap = new HashMap<>();
 
-    private Connection getConnection() throws IOException, SQLException {
-        FileInputStream fin = new FileInputStream("C:\\Users\\Praveen Satya\\IdeaProjects\\PayrollServiceProject\\config.properties");
-        Properties prop = new Properties();
-        prop.load(fin);
-        return DriverManager.getConnection(prop.getProperty("db.url"), prop.getProperty("db.user"), prop.getProperty("db.password"));
-    }
-
     public static void main(String[] args) {
         PayrollService payrollService = new PayrollService();
         try {
@@ -29,9 +22,35 @@ public class PayrollService {
             con = payrollService.getConnection();
             Statement stmt = con.createStatement();
             payrollService.getRecordsFromDB(payrollService, stmt);
-        } catch (IOException | SQLException e) {
+            payrollService.updateSalary(payrollService, stmt, "Mani", 300000);
+        } catch (IOException | SQLException | RecordNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    protected void updateSalary(PayrollService payrollService, Statement stmt, String name, double newSalary) throws SQLException, RecordNotFoundException {
+        String query = "update payroll set basic_pay = " + newSalary + " where emp_id = " +
+                "(select emp_id from employee where name = '" + name + "')";
+        stmt.executeUpdate(query);
+        query = "select emp_id from employee where name = '" + name + "'";
+        ResultSet rs = stmt.executeQuery(query);
+        rs.next();
+        int emp_id = rs.getInt(1);
+        payrollService.syncSalaryInMap(payrollService, emp_id, newSalary);
+    }
+
+    private void syncSalaryInMap(PayrollService payrollService, int emp_id, double newSalary) throws RecordNotFoundException {
+        payrollService.checkRecordPresentInMap(payrollService, emp_id);
+        EmployeePayroll tempEmployeePayrollObject = payrollService.employeePayrollMap.get(emp_id);
+        tempEmployeePayrollObject.basic_pay = newSalary;
+        payrollService.employeePayrollMap.put(emp_id, tempEmployeePayrollObject);
+    }
+
+    protected Connection getConnection() throws IOException, SQLException {
+        FileInputStream fin = new FileInputStream("C:\\Users\\Praveen Satya\\IdeaProjects\\PayrollServiceProject\\config.properties");
+        Properties prop = new Properties();
+        prop.load(fin);
+        return DriverManager.getConnection(prop.getProperty("db.url"), prop.getProperty("db.user"), prop.getProperty("db.password"));
     }
 
     public void getRecordsFromDB(PayrollService payrollService, Statement stmt) throws SQLException {
@@ -56,4 +75,11 @@ public class PayrollService {
             System.out.println(tempLoopObject);
         }
     }
+
+    public void checkRecordPresentInMap(PayrollService payrollService, int emp_id) throws RecordNotFoundException {
+        if (!payrollService.employeePayrollMap.containsKey(emp_id))
+            throw new RecordNotFoundException("Records not found");
+    }
+
+
 }
