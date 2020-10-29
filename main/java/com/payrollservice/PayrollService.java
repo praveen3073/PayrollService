@@ -20,20 +20,22 @@ public class PayrollService {
         Connection con;
         try {
             con = payrollService.getConnection();
-            Statement stmt = con.createStatement();
-            payrollService.getRecordsFromDB(payrollService, stmt);
-            payrollService.updateSalary(payrollService, stmt, "Mani", 300000);
+            payrollService.getRecordsFromDB(payrollService, con);
+            payrollService.updateSalary(payrollService, con, "Mani", 300000);
         } catch (IOException | SQLException | RecordNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    protected void updateSalary(PayrollService payrollService, Statement stmt, String name, double newSalary) throws SQLException, RecordNotFoundException {
-        String query = "update payroll set basic_pay = " + newSalary + " where emp_id = " +
-                "(select emp_id from employee where name = '" + name + "')";
-        stmt.executeUpdate(query);
-        query = "select emp_id from employee where name = '" + name + "'";
-        ResultSet rs = stmt.executeQuery(query);
+    protected void updateSalary(PayrollService payrollService, Connection con, String name, double newSalary) throws SQLException, RecordNotFoundException {
+        PreparedStatement updatePreparedStatement = con.prepareStatement("update payroll set basic_pay = ? where emp_id = " +
+                "(select emp_id from employee where name = ?)");
+        updatePreparedStatement.setDouble(1, newSalary);
+        updatePreparedStatement.setString(2, name);
+        updatePreparedStatement.executeUpdate();
+        PreparedStatement selectPreparedStatement = con.prepareStatement("select emp_id from employee where name = ?");
+        selectPreparedStatement.setString(1, name);
+        ResultSet rs = selectPreparedStatement.executeQuery();
         rs.next();
         int emp_id = rs.getInt(1);
         payrollService.syncSalaryInMap(payrollService, emp_id, newSalary);
@@ -53,7 +55,8 @@ public class PayrollService {
         return DriverManager.getConnection(prop.getProperty("db.url"), prop.getProperty("db.user"), prop.getProperty("db.password"));
     }
 
-    public void getRecordsFromDB(PayrollService payrollService, Statement stmt) throws SQLException {
+    public void getRecordsFromDB(PayrollService payrollService, Connection con) throws SQLException {
+        Statement stmt = con.createStatement();
         String query = "select * from employee e, payroll p " +
                 "where e.emp_id = p.emp_id";
         ResultSet resultSet = stmt.executeQuery(query);

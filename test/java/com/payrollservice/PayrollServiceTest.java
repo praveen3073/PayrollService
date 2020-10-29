@@ -16,8 +16,8 @@ public class PayrollServiceTest {
         try {
             Connection con = payrollService.getConnection();
             Statement stmt = con.createStatement();
-            payrollService.getRecordsFromDB(payrollService, stmt);
-            payrollService.updateSalary(payrollService, stmt, "Mani", 300000);
+            payrollService.getRecordsFromDB(payrollService, con);
+            payrollService.updateSalary(payrollService, con, "Mani", 180000);
             ResultSet rs = stmt.executeQuery("select emp_id from employee where name = 'Mani'");
             rs.next();
             int emp_id = rs.getInt(1);
