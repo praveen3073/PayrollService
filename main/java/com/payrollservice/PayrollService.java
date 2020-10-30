@@ -17,6 +17,7 @@ public class PayrollService {
         crudOperations.read(payrollService, "Ganesh");                            // Retrieve particular employee payroll records
         crudOperations.read(payrollService, "Rahul");
         crudOperations.read(payrollService, "Mani");
+        crudOperations.read(payrollService, "2018-01-01", "2019-12-31");
     }
 
     protected boolean checkIfSynced() {
