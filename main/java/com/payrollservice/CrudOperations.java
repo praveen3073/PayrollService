@@ -71,7 +71,7 @@ public class CrudOperations {
             Statement stmt = con.createStatement();
             String query = "select * from employee e, payroll p " +
                     "where e.emp_id = p.emp_id and " +
-                    "start between cast('" + dateLowerLimit +"' as date) " +
+                    "start between cast('" + dateLowerLimit + "' as date) " +
                     "and cast('" + dateUpperLimit + "' as date)";
             ResultSet resultSet = stmt.executeQuery(query);
             System.out.println("Displaying records with start date between " + dateLowerLimit + " and " + dateUpperLimit + ":");
@@ -93,6 +93,34 @@ public class CrudOperations {
                 System.out.println(tempLoopObject);
             }
             stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Retrieve sum, avg, min, max, count of salaries grouped by gender, from DB
+    public void read() {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query = "SELECT employee.gender, SUM(p.basic_pay) as sum, " +
+                    "AVG(p.basic_pay) as avg, MIN(p.basic_pay) as min, " +
+                    "MAX(p.basic_pay) as max, COUNT(p.basic_pay) as count " +
+                    "FROM " +
+                    "(SELECT emp_id, basic_pay FROM payroll) p, " +
+                    "employee " +
+                    "WHERE employee.emp_id = p.emp_id " +
+                    "GROUP BY employee.gender";
+            ResultSet resultSet = stmt.executeQuery(query);
+            while (resultSet.next()) {
+                System.out.println("Gender: " + resultSet.getString("gender") + ", " +
+                        "Sum: " + resultSet.getDouble("sum") + ", " +
+                        "Avg: " + resultSet.getDouble("avg") + ", " +
+                        "Min: " + resultSet.getDouble("min") + ", " +
+                        "Max: " + resultSet.getDouble("max") + ", " +
+                        "Count: " + resultSet.getInt("count")
+                );
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
