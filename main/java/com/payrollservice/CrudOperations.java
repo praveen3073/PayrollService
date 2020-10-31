@@ -4,25 +4,44 @@ import java.sql.*;
 
 // Retrieve all records from DB
 public class CrudOperations {
-    public void createRecord(PayrollService payrollService, int company_id, String name, String phone, String address, char gender, String startDate) {
+    public void createRecord(PayrollService payrollService, int company_id, String name, String phone, String address, char gender, String startDate, double basic_pay) {
         try {
             System.out.println("Inserting record...");
             Connection con = JDBCConnection.getInstance().getConnection();
             con.setAutoCommit(false);
-            String query = "insert into employee (company_id, name, phone, address, gender, start) values " +
+
+            // Insert employee in employee table
+            String insertEmployeeQuery = "insert into employee (company_id, name, phone, address, gender, start) values " +
                     "(?,?,?,?,?,?)";
-            PreparedStatement preparedStatement = con.prepareStatement(query);
-            preparedStatement.setInt(1, company_id);
-            preparedStatement.setString(2, name);
-            preparedStatement.setString(3, phone);
-            preparedStatement.setString(4, address);
-            preparedStatement.setString(5, String.valueOf(gender));
-            preparedStatement.setString(6, startDate);
-            int count = preparedStatement.executeUpdate();
-            if(count>0)
+            PreparedStatement employeePreparedStatement = con.prepareStatement(insertEmployeeQuery);
+            employeePreparedStatement.setInt(1, company_id);
+            employeePreparedStatement.setString(2, name);
+            employeePreparedStatement.setString(3, phone);
+            employeePreparedStatement.setString(4, address);
+            employeePreparedStatement.setString(5, String.valueOf(gender));
+            employeePreparedStatement.setString(6, startDate);
+            int countEmployeeRecordsChanged = employeePreparedStatement.executeUpdate();
+
+            // Insert employee payroll in payroll table
+            String insertPayrollQuery = "insert into payroll (emp_id, basic_pay, deductions, taxable_pay, tax, net_pay) values " +
+                    "(?,?,?,?,?,?)";
+            double deductions = 0.2 * basic_pay;
+            double taxable_pay = basic_pay - deductions;
+            double tax = 0.1 * taxable_pay;
+            double net_pay = basic_pay - tax;
+            PreparedStatement payrollPreparedStatement = con.prepareStatement(insertPayrollQuery);
+            payrollPreparedStatement.setInt(1, payrollService.getEmpIdByName(name));
+            payrollPreparedStatement.setDouble(2, basic_pay);
+            payrollPreparedStatement.setDouble(3, deductions);
+            payrollPreparedStatement.setDouble(4, taxable_pay);
+            payrollPreparedStatement.setDouble(5, tax);
+            payrollPreparedStatement.setDouble(6, net_pay);
+            int countPayrollRecordsChanged = payrollPreparedStatement.executeUpdate();
+
+            if(countEmployeeRecordsChanged>0 && countPayrollRecordsChanged>0)
                 con.commit();
             sync(payrollService);
-        } catch (SQLException e) {
+        } catch (SQLException | RecordsNotFoundException e) {
             e.printStackTrace();
         }
     }

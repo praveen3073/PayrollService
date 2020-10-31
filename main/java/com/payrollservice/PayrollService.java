@@ -47,4 +47,18 @@ public class PayrollService {
         }
         return true;
     }
+
+    public int getEmpIdByName(String name) throws RecordsNotFoundException {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query = "select emp_id from employee where name = '" + name + "'";
+            ResultSet resultSet = stmt.executeQuery(query);
+            resultSet.next();
+            return resultSet.getInt("emp_id");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        throw new RecordsNotFoundException("Record not found");
+    }
 }
