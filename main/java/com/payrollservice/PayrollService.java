@@ -12,13 +12,13 @@ public class PayrollService {
     public static void main(String[] args) {
         PayrollService payrollService = new PayrollService();
         CrudOperations crudOperations = new CrudOperations();
-        crudOperations.read(payrollService);                                            // Retrieve employee payroll records
+        crudOperations.readAll(payrollService);                                            // Retrieve employee payroll records
         crudOperations.update(payrollService, "Mani", 300000);            // Update salary for a particular record
-        crudOperations.read(payrollService, "Ganesh");                            // Retrieve particular employee payroll records
-        crudOperations.read(payrollService, "Rahul");
-        crudOperations.read(payrollService, "Mani");
-        crudOperations.read(payrollService, "2018-01-01", "2019-12-31");        // Retrieve records with start date in given date frame
-        crudOperations.read();                      // Retrieve sum, avg, min, max, count of employee salaries grouped by gender
+        crudOperations.readByName(payrollService, "Ganesh");                            // Retrieve particular employee payroll records
+        crudOperations.readByName(payrollService, "Rahul");
+        crudOperations.readByName(payrollService, "Mani");
+        crudOperations.readByDate(payrollService, "2018-01-01", "2019-12-31");        // Retrieve records with start date in given date frame
+        crudOperations.readSalaryStatsByGender(payrollService);                      // Retrieve sum, avg, min, max, count of employee salaries grouped by gender
     }
 
     protected boolean checkIfSynced() {
