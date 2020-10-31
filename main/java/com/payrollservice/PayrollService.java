@@ -29,8 +29,7 @@ public class PayrollService {
             while (resultSet.next()) {
                 int emp_id = resultSet.getInt("emp_id");
                 EmployeePayroll employeePayrollObject = employeePayrollMap.get(emp_id);
-                if (!(employeePayrollObject.company_id == resultSet.getInt("company_id") &&
-                        employeePayrollObject.name.equals(resultSet.getString("name")) &&
+                if (!(employeePayrollObject.name.equals(resultSet.getString("name")) &&
                         employeePayrollObject.phone.equals(resultSet.getString("phone")) &&
                         employeePayrollObject.address.equals(resultSet.getString("address")) &&
                         employeePayrollObject.gender == resultSet.getString("gender").charAt(0) &&

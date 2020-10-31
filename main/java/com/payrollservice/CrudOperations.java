@@ -40,6 +40,7 @@ public class CrudOperations {
 
             if(countEmployeeRecordsChanged>0 && countPayrollRecordsChanged>0)
                 con.commit();
+            con.setAutoCommit(true);
             sync(payrollService);
         } catch (SQLException | RecordsNotFoundException e) {
             e.printStackTrace();
@@ -49,8 +50,15 @@ public class CrudOperations {
         try {
             Connection con = JDBCConnection.getInstance().getConnection();
             Statement stmt = con.createStatement();
-            String query = "select * from employee e, payroll p " +
-                    "where e.emp_id = p.emp_id";
+            /*String query = "select * from employee e, payroll p " +
+                    "where e.emp_id = p.emp_id";*/
+            String query = "select c.company_name, e.emp_id, e.name, e.phone, e.address, e.gender, e.start, p.basic_pay, p.deductions, p.taxable_pay, p.tax, p.net_pay, d.department_name " +
+                    "from company c " +
+                    "right join employee e on c.company_id = e.company_id " +
+                    "inner join payroll p on e.emp_id = p.emp_id " +
+                    "left join (select emp_id, department_name from employee_department, department " +
+                    "where employee_department.department_id = department.department_id) d " +
+                    "on e.emp_id = d.emp_id";
             ResultSet resultSet = stmt.executeQuery(query);
             System.out.println("Displaying all records: ");
             displayResultSet(resultSet);
@@ -141,16 +149,22 @@ public class CrudOperations {
         }
     }
 
-    private void sync(PayrollService payrollService) {
+    public void sync(PayrollService payrollService) {
         try {
+            payrollService.employeePayrollMap.clear();
             Connection con = JDBCConnection.getInstance().getConnection();
             Statement stmt = con.createStatement();
-            String query = "select * from employee e, payroll p " +
-                    "where e.emp_id = p.emp_id";
+            String query = "select c.company_name, e.emp_id, e.name, e.phone, e.address, e.gender, e.start, p.basic_pay, p.deductions, p.taxable_pay, p.tax, p.net_pay, d.department_name " +
+                    "from company c " +
+                    "right join employee e on c.company_id = e.company_id " +
+                    "inner join payroll p on e.emp_id = p.emp_id " +
+                    "left join (select emp_id, department_name from employee_department, department " +
+                    "where employee_department.department_id = department.department_id) d " +
+                    "on e.emp_id = d.emp_id";
             ResultSet resultSet = stmt.executeQuery(query);
             while(resultSet.next()) {
                 EmployeePayroll tempLoopObject = new EmployeePayroll();
-                tempLoopObject.company_id = resultSet.getInt("company_id");
+                tempLoopObject.company_name = resultSet.getString("company_name");
                 tempLoopObject.emp_id = resultSet.getInt("emp_id");
                 tempLoopObject.name = resultSet.getString("name");
                 tempLoopObject.phone = resultSet.getString("phone");
@@ -162,6 +176,8 @@ public class CrudOperations {
                 tempLoopObject.taxable_pay = resultSet.getDouble("taxable_pay");
                 tempLoopObject.tax = resultSet.getDouble("tax");
                 tempLoopObject.net_pay = resultSet.getDouble("net_pay");
+                String department_name = resultSet.getString("department_name");
+                tempLoopObject.departments.add(department_name);
                 payrollService.employeePayrollMap.put(tempLoopObject.emp_id, tempLoopObject);
             }
         } catch (SQLException e) {
