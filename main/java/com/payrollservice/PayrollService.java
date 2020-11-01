@@ -13,7 +13,7 @@ public class PayrollService {
         PayrollService payrollService = new PayrollService();
         CrudOperations crudOperations = new CrudOperations();
         crudOperations.readAll(payrollService);                                            // Retrieve employee payroll records
-        crudOperations.update(payrollService, "Mani", 300000);            // Update salary for a particular record
+        crudOperations.updateSalaryByName(payrollService, "Mani", 300000);            // Update salary for a particular record
         crudOperations.readByName(payrollService, "Ganesh");                            // Retrieve particular employee payroll records
         crudOperations.readByName(payrollService, "Rahul");
         crudOperations.readByName(payrollService, "Mani");

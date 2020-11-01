@@ -125,7 +125,7 @@ public class CrudOperations {
     }
 
     // Update salary of a given employee in map and DB
-    public void update(PayrollService payrollService, String name, double newSalary) {
+    public void updateSalaryByName(PayrollService payrollService, String name, double newSalary) {
         try {
             System.out.println("Updating salary for " + name + "...");
             Connection con = JDBCConnection.getInstance().getConnection();
