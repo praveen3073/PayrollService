@@ -10,7 +10,7 @@ public class PayrollDBService {
     public PayrollDBService() {
         try {
             String query = "select * from employee e, payroll p " +
-                    "where e.emp_id = p.emp_id and name = ?";
+                    "where e.emp_id = p.emp_id and name = ? and e.is_active = true";
             preparedStatement = JDBCConnection.getInstance().getConnection().prepareStatement(query);
         } catch (SQLException e) {
             e.printStackTrace();

@@ -58,7 +58,8 @@ public class CrudOperations {
                     "inner join payroll p on e.emp_id = p.emp_id " +
                     "left join (select emp_id, department_name from employee_department, department " +
                     "where employee_department.department_id = department.department_id) d " +
-                    "on e.emp_id = d.emp_id";
+                    "on e.emp_id = d.emp_id " +
+                    "where is_active = true";
             ResultSet resultSet = stmt.executeQuery(query);
             System.out.println("Displaying all records: ");
             displayResultSet(resultSet);
@@ -91,7 +92,8 @@ public class CrudOperations {
             String query = "select * from employee e, payroll p " +
                     "where e.emp_id = p.emp_id and " +
                     "start between cast('" + dateLowerLimit + "' as date) " +
-                    "and cast('" + dateUpperLimit + "' as date)";
+                    "and cast('" + dateUpperLimit + "' as date) and " +
+                    "e.is_active = true";
             ResultSet resultSet = stmt.executeQuery(query);
             System.out.println("Displaying records with start date between " + dateLowerLimit + " and " + dateUpperLimit + ":");
             displayResultSet(resultSet);
@@ -114,7 +116,7 @@ public class CrudOperations {
                     "FROM " +
                     "(SELECT emp_id, basic_pay FROM payroll) p, " +
                     "employee " +
-                    "WHERE employee.emp_id = p.emp_id " +
+                    "WHERE employee.emp_id = p.emp_id and employee.is_active = true " +
                     "GROUP BY employee.gender";
             ResultSet resultSet = stmt.executeQuery(query);
             displayResultSet(resultSet);
@@ -149,6 +151,19 @@ public class CrudOperations {
         }
     }
 
+    public void deleteRecord(PayrollService payrollService, String name) {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            int emp_id = payrollService.getEmpIdByName(name);
+            payrollService.employeePayrollMap.remove(emp_id);               // Remove EmployeePayroll Object from map
+            String query = "update table employee set is_active = false where emp_id = " + emp_id;              // Set is_active to false
+            stmt.executeQuery(query);
+        } catch (RecordsNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void sync(PayrollService payrollService) {
         try {
             payrollService.employeePayrollMap.clear();
@@ -160,7 +175,8 @@ public class CrudOperations {
                     "inner join payroll p on e.emp_id = p.emp_id " +
                     "left join (select emp_id, department_name from employee_department, department " +
                     "where employee_department.department_id = department.department_id) d " +
-                    "on e.emp_id = d.emp_id";
+                    "on e.emp_id = d.emp_id " +
+                    "where is_active = true";
             ResultSet resultSet = stmt.executeQuery(query);
             while(resultSet.next()) {
                 EmployeePayroll tempLoopObject = new EmployeePayroll();
