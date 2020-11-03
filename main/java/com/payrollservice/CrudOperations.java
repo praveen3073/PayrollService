@@ -40,7 +40,7 @@ public class CrudOperations {
 
             if(countEmployeeRecordsChanged>0 && countPayrollRecordsChanged>0)
                 con.commit();
-            con.setAutoCommit(true);
+            //con.setAutoCommit(true);
             sync(payrollService);
         } catch (SQLException | RecordsNotFoundException e) {
             e.printStackTrace();
@@ -136,6 +136,7 @@ public class CrudOperations {
             updatePreparedStatement.setDouble(1, newSalary);
             updatePreparedStatement.setString(2, name);
             updatePreparedStatement.executeUpdate();
+            con.commit();
             for (EmployeePayroll employeePayroll : payrollService.employeePayrollMap.values()) {
                 if (employeePayroll.name.equals(name)) {
                     int emp_id = employeePayroll.emp_id;
@@ -159,6 +160,7 @@ public class CrudOperations {
             payrollService.employeePayrollMap.remove(emp_id);               // Remove EmployeePayroll Object from map
             String query = "update employee set is_active = false where emp_id = " + emp_id;              // Set is_active to false
             stmt.executeUpdate(query);
+            con.commit();
         } catch (RecordsNotFoundException | SQLException e) {
             e.printStackTrace();
         }
@@ -186,7 +188,7 @@ public class CrudOperations {
                 tempLoopObject.phone = resultSet.getString("phone");
                 tempLoopObject.address = resultSet.getString("address");
                 tempLoopObject.gender = resultSet.getString("gender").charAt(0);
-                tempLoopObject.start = resultSet.getDate("start");
+                tempLoopObject.start = resultSet.getDate("start").toString();
                 tempLoopObject.basic_pay = resultSet.getDouble("basic_pay");
                 tempLoopObject.deductions = resultSet.getDouble("deductions");
                 tempLoopObject.taxable_pay = resultSet.getDouble("taxable_pay");

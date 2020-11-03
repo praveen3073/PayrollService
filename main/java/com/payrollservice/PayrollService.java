@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PayrollService {
@@ -33,7 +34,7 @@ public class PayrollService {
                         employeePayrollObject.phone.equals(resultSet.getString("phone")) &&
                         employeePayrollObject.address.equals(resultSet.getString("address")) &&
                         employeePayrollObject.gender == resultSet.getString("gender").charAt(0) &&
-                        employeePayrollObject.start.compareTo(resultSet.getDate("start")) == 0 &&
+                        employeePayrollObject.start.compareTo(resultSet.getDate("start").toString()) == 0 &&
                         employeePayrollObject.basic_pay == resultSet.getDouble("basic_pay") &&
                         employeePayrollObject.deductions == resultSet.getDouble("deductions") &&
                         employeePayrollObject.taxable_pay == resultSet.getDouble("taxable_pay") &&
@@ -59,5 +60,27 @@ public class PayrollService {
             e.printStackTrace();
         }
         throw new RecordsNotFoundException("Record not found");
+    }
+
+    public void addEmployeesToDBWithThread(ArrayList<EmployeePayroll> employeeList) {
+        HashMap<Integer, Boolean> employeeAdditionStatus = new HashMap<>();
+        for(EmployeePayroll employee : employeeList) {
+            Runnable task = () -> {
+                employeeAdditionStatus.put(employee.hashCode(), false);
+                CrudOperations crudOperations = new CrudOperations();
+                PayrollService payrollService = new PayrollService();
+                crudOperations.createRecord(payrollService, 1, employee.name, employee.phone, employee.address, employee.gender, employee.start, employee.basic_pay);
+                employeeAdditionStatus.put(employee.hashCode(), true);
+            };
+                Thread thread = new Thread(task, employee.name);
+                thread.start();
+        }
+        while(employeeAdditionStatus.containsValue(false)) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

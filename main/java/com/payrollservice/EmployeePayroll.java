@@ -1,7 +1,7 @@
 package com.payrollservice;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Objects;
 
 public class EmployeePayroll {
     String company_name;
@@ -10,13 +10,28 @@ public class EmployeePayroll {
     String phone;
     String address;
     char gender;
-    Date start;
+    String start;
     double basic_pay;
     double deductions;
     double taxable_pay;
     double tax;
+
+    public EmployeePayroll(String name, String phone, String address, char gender, String start, double basic_pay) {
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
+        this.gender = gender;
+        this.start = start;
+        this.basic_pay = basic_pay;
+    }
+
     double net_pay;
     ArrayList<String> departments;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(emp_id, name);
+    }
 
     public EmployeePayroll() {
         this.departments = new ArrayList<>();

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 
 public class PayrollServiceTest {
     @Test
@@ -104,8 +105,8 @@ public class PayrollServiceTest {
             int expectedCount = 0;
             crudOperations.readByDate(payrollService, "2018-01-01", "2019-01-01");
             for (EmployeePayroll employeePayroll : payrollService.employeePayrollMap.values()) {
-                if (employeePayroll.start.toString().compareTo("2018-01-01") > 0 &&
-                        employeePayroll.start.toString().compareTo("2019-01-01") < 0)
+                if (employeePayroll.start.compareTo("2018-01-01") > 0 &&
+                        employeePayroll.start.compareTo("2019-01-01") < 0)
                     expectedCount++;
             }
             String query = "select count(emp_id) from employee where start between cast('2018-01-01' as date) and cast('2019-01-01' as date)";
@@ -167,9 +168,11 @@ public class PayrollServiceTest {
             CrudOperations crudOperations = new CrudOperations();
             int countBeforeInsertion = crudOperations.readCountOfEmployees();
             Instant start = Instant.now();
-            crudOperations.createRecord(payrollService, 1, "TestName1", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
-            crudOperations.createRecord(payrollService, 1, "TestName2", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
-            crudOperations.createRecord(payrollService, 1, "TestName3", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
+            ArrayList<EmployeePayroll> employeeList = new ArrayList<>();
+            employeeList.add(new EmployeePayroll("TestName1", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000));
+            employeeList.add(new EmployeePayroll("TestName2", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000));
+            employeeList.add(new EmployeePayroll("TestName3", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000));
+            payrollService.addEmployeesToDBWithThread(employeeList);
             Instant end = Instant.now();
             System.out.println("Duration Without Thread: " + Duration.between(start, end));
             int countAfterInsertion = crudOperations.readCountOfEmployees();
@@ -181,6 +184,5 @@ public class PayrollServiceTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 }
