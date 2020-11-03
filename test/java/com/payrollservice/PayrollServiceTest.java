@@ -181,6 +181,7 @@ public class PayrollServiceTest {
             Statement stmt = con.createStatement();
             String query = "delete from employee where name in ('TestName1', 'TestName2', 'TestName3')";
             stmt.executeUpdate(query);
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }

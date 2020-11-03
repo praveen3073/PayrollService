@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class JDBCConnection {
     private static JDBCConnection jdbcConnection;
     private Connection connection;
-    public Connection getConnection() {
+    public synchronized Connection getConnection() {
         return connection;
     }
     private JDBCConnection() {
