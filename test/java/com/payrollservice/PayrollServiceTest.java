@@ -36,7 +36,7 @@ public class PayrollServiceTest {
             PayrollService payrollService = new PayrollService();
             CrudOperations crudOperations = new CrudOperations();
             crudOperations.sync(payrollService);
-            if(!payrollService.employeePayrollMap.containsKey(payrollService.getEmpIdByName("Shalu")))
+            if (!payrollService.employeePayrollMap.containsKey(payrollService.getEmpIdByName("Shalu")))
                 crudOperations.createRecord(payrollService, 1, "Shalu", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
             boolean result = payrollService.checkIfSynced();
             Assert.assertTrue(result);
@@ -132,18 +132,17 @@ public class PayrollServiceTest {
             double totalSalaryMale = 0;
             int countFemale = 0;
             int countMale = 0;
-            for( EmployeePayroll employeePayroll : payrollService.employeePayrollMap.values()) {
-                if(employeePayroll.gender == 'M' || employeePayroll.gender == 'm') {
+            for (EmployeePayroll employeePayroll : payrollService.employeePayrollMap.values()) {
+                if (employeePayroll.gender == 'M' || employeePayroll.gender == 'm') {
                     totalSalaryMale += employeePayroll.basic_pay;
                     countMale++;
-                }
-                else if(employeePayroll.gender == 'F' || employeePayroll.gender == 'f') {
+                } else if (employeePayroll.gender == 'F' || employeePayroll.gender == 'f') {
                     totalSalaryFemale += employeePayroll.basic_pay;
                     countFemale++;
                 }
             }
-            avgSalaryFemale = totalSalaryFemale/countFemale;
-            avgSalaryMale = totalSalaryMale/countMale;
+            avgSalaryFemale = totalSalaryFemale / countFemale;
+            avgSalaryMale = totalSalaryMale / countMale;
             String query = "SELECT employee.gender, " +
                     "AVG(p.basic_pay) as avg " +
                     "FROM " +
