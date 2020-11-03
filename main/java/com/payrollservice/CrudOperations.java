@@ -136,7 +136,6 @@ public class CrudOperations {
             updatePreparedStatement.setDouble(1, newSalary);
             updatePreparedStatement.setString(2, name);
             updatePreparedStatement.executeUpdate();
-            con.commit();
             for (EmployeePayroll employeePayroll : payrollService.employeePayrollMap.values()) {
                 if (employeePayroll.name.equals(name)) {
                     int emp_id = employeePayroll.emp_id;

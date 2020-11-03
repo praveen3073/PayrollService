@@ -186,4 +186,17 @@ public class PayrollServiceTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void given3Names_WhenSalariesUpdatedIn_ShouldBeSynced() {
+        PayrollService payrollService = new PayrollService();
+        Instant start = Instant.now();
+        String[] names = new String[]{"Rahul", "Ganesh", "Mani"};
+        double[] newSalaries = new double[]{6000000, 6000000, 6000000};
+        payrollService.updateMultipleSalariesInDB(names, newSalaries);
+        Instant end = Instant.now();
+        System.out.println("Duration Without Thread: " + Duration.between(start, end));
+        boolean output = payrollService.checkIfSynced();
+        Assert.assertTrue(output);
+    }
 }

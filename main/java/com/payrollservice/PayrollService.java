@@ -83,4 +83,26 @@ public class PayrollService {
             }
         }
     }
+
+    public void updateMultipleSalariesInDB(String[] names, double[] newSalaries) {
+        HashMap<String, Boolean> salaryUpdatedStatus = new HashMap<>();
+        for(int i=0; i<names.length; i++) {
+            int finalI = i;
+            Runnable task = () -> {
+                salaryUpdatedStatus.put(names[finalI], false);
+                CrudOperations crudOperations = new CrudOperations();
+                crudOperations.updateSalaryByName(this, names[finalI], newSalaries[finalI]);
+                salaryUpdatedStatus.put(names[finalI], true);
+            };
+            Thread thread = new Thread(task);
+            thread.start();
+        }
+        while (salaryUpdatedStatus.containsValue(false)) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
