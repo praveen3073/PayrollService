@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
+import java.time.Instant;
 
 public class PayrollServiceTest {
     @Test
@@ -156,5 +158,29 @@ public class PayrollServiceTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void given3Employees_WhenAddedToDB_ShouldReturnCorrectCount() {
+        try {
+            PayrollService payrollService = new PayrollService();
+            CrudOperations crudOperations = new CrudOperations();
+            int countBeforeInsertion = crudOperations.readCountOfEmployees();
+            Instant start = Instant.now();
+            crudOperations.createRecord(payrollService, 1, "TestName1", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
+            crudOperations.createRecord(payrollService, 1, "TestName2", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
+            crudOperations.createRecord(payrollService, 1, "TestName3", "6654321223", "Jodhpur", 'F', "2018-02-02", 800000);
+            Instant end = Instant.now();
+            System.out.println("Duration Without Thread: " + Duration.between(start, end));
+            int countAfterInsertion = crudOperations.readCountOfEmployees();
+            Assert.assertEquals(countBeforeInsertion + 3, countAfterInsertion);
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query = "delete from employee where name in ('TestName1', 'TestName2', 'TestName3')";
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }

@@ -157,8 +157,8 @@ public class CrudOperations {
             Statement stmt = con.createStatement();
             int emp_id = payrollService.getEmpIdByName(name);
             payrollService.employeePayrollMap.remove(emp_id);               // Remove EmployeePayroll Object from map
-            String query = "update table employee set is_active = false where emp_id = " + emp_id;              // Set is_active to false
-            stmt.executeQuery(query);
+            String query = "update employee set is_active = false where emp_id = " + emp_id;              // Set is_active to false
+            stmt.executeUpdate(query);
         } catch (RecordsNotFoundException | SQLException e) {
             e.printStackTrace();
         }
@@ -216,5 +216,19 @@ public class CrudOperations {
         } catch (SQLException e) {
                 e.printStackTrace();
         }
+    }
+
+    public int readCountOfEmployees() {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement statement = con.createStatement();
+            String query = "Select count(emp_id) from employee";
+            ResultSet resultSet = statement.executeQuery(query);
+            resultSet.next();
+            return resultSet.getInt("count(emp_id)");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
