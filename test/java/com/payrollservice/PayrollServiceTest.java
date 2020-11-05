@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PayrollServiceTest {
     @Test
@@ -234,5 +235,46 @@ public class PayrollServiceTest {
         }
         else
             System.out.println("Emp ID " + emp_id + " already exists in json server");
+    }
+
+    @Test
+    public void givenEmployees_WhenAdded_ShouldReturnAddedEmployees() {
+        int emp_id1 = 21;
+        int emp_id2 = 22;
+        int emp_id3 = 23;
+        ArrayList<EmployeePayroll> employeeList = new ArrayList<>();
+        employeeList.add(new EmployeePayroll(emp_id1, "Rakesh", 2000));
+        employeeList.add(new EmployeePayroll(emp_id2, "Manikanta", 10000));
+        employeeList.add(new EmployeePayroll(emp_id3, "Surya", 22000));
+        HashMap<Integer, Boolean> employeeAdditionStatus = new HashMap<>();
+        for(EmployeePayroll employee : employeeList) {
+            Runnable task = () -> {
+                employeeAdditionStatus.put(employee.hashCode(), false);
+                Response response = RestAssured.get("/employees/" + employee.emp_id);
+                if (response.getStatusCode() == 404)
+                {
+                    RestAssured.given().contentType(ContentType.JSON)
+                            .accept(ContentType.JSON)
+                            .body("{\"id\": " + employee.emp_id + ", \"name\": \"" + employee.name + "\",\"salary\": \"" + employee.basic_pay + "\"}")
+                            .when()
+                            .post("/employees/create")
+                            .then()
+                            .body("id", Matchers.any(Integer.class))
+                            .body("name", Matchers.is(employee.name));
+                }
+                else
+                    System.out.println("Emp ID " + employee.emp_id + " already exists in json server");
+                employeeAdditionStatus.put(employee.hashCode(), true);
+            };
+            Thread thread = new Thread(task);
+            thread.start();
+        }
+        while (employeeAdditionStatus.containsValue(false)) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
