@@ -315,4 +315,17 @@ public class PayrollServiceTest {
         int statusCode = employeeList.statusCode();
         Assert.assertEquals(statusCode, 200);
     }
+
+    @Test
+    public void givenEmployeeId_OnDelete_ShouldReturnSuccessStatus() {
+        int empId = 21;
+        Response response = RestAssured.get("/employees/" + empId);
+        if (response.getStatusCode() == 200) {
+            Response deleteResponse = RestAssured.delete("/employees/delete/" + empId);
+            int statusCode = deleteResponse.statusCode();
+            Assert.assertEquals(200, statusCode);
+        }
+        else
+            System.out.println("Emp ID " + empId + " not found in Json Server");
+    }
 }
