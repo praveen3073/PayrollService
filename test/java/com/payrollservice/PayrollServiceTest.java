@@ -230,7 +230,7 @@ public class PayrollServiceTest {
                     .when()
                     .post("/employees/create")
                     .then()
-                    .body("id", Matchers.any(Integer.class))
+                    .body("id", Matchers.is(emp_id))
                     .body("name", Matchers.is("Rakesh"));
         }
         else
@@ -259,7 +259,7 @@ public class PayrollServiceTest {
                             .when()
                             .post("/employees/create")
                             .then()
-                            .body("id", Matchers.any(Integer.class))
+                            .body("id", Matchers.is(employee.emp_id))
                             .body("name", Matchers.is(employee.name));
                 }
                 else
@@ -276,5 +276,25 @@ public class PayrollServiceTest {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Test
+    public void givenEmployee_WhenPut_ShouldReturnUpdatedEmployee() {
+        int emp_id = 23;
+        Response response = RestAssured.get("/employees/" + emp_id);
+        if (response.getStatusCode() == 200)
+        {
+            RestAssured.given().contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .body("{\"name\": \"Surya\", \"salary\": \"250000\"}")
+                    .when()
+                    .put("/employees/update/" + emp_id)
+                    .then()
+                    .body("id", Matchers.is(emp_id))
+                    .body("name", Matchers.is("Surya"))
+                    .body("salary", Matchers.is("250000"));
+        }
+        else
+            System.out.println("Emp ID " + emp_id + " doesn't exist in Json server");
     }
 }
