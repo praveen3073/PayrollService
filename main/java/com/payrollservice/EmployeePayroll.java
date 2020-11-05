@@ -16,6 +16,16 @@ public class EmployeePayroll {
     double taxable_pay;
     double tax;
 
+    public EmployeePayroll(int emp_id, String name, double basic_pay) {
+        this.emp_id = emp_id;
+        this.name = name;
+        this.basic_pay = basic_pay;
+        this.phone = "";
+        this.address = "";
+        this.gender = ' ';
+        this.start = "";
+    }
+
     public EmployeePayroll(String name, String phone, String address, char gender, String start, double basic_pay) {
         this.name = name;
         this.phone = phone;

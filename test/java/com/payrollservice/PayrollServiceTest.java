@@ -1,6 +1,11 @@
 package com.payrollservice;
 
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -197,5 +202,37 @@ public class PayrollServiceTest {
         System.out.println("Duration Without Thread: " + Duration.between(start, end));
         boolean output = payrollService.checkIfSynced();
         Assert.assertTrue(output);
+    }
+
+    @Before
+    public void setup() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = 4001;
+    }
+
+    public Response getEmployeeList() {
+        Response response = RestAssured.get("/employees/list");
+        System.out.println(response.asString());
+        return response;
+    }
+
+    @Test
+    public void givenEmployee_WhenAddedToJSONServer_ShouldReturnAddedEmployee() {
+        int emp_id = 33;
+        Response response = RestAssured.get("/employees/" + emp_id);
+        if (response.getStatusCode() == 404)
+        {
+            EmployeePayroll employeePayroll = new EmployeePayroll(emp_id, "Rakesh", 2000);
+            RestAssured.given().contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .body("{\"id\": " + employeePayroll.emp_id + ", \"name\": \"" + employeePayroll.name + "\",\"salary\": \"" + employeePayroll.basic_pay + "\"}")
+                    .when()
+                    .post("/employees/create")
+                    .then()
+                    .body("id", Matchers.any(Integer.class))
+                    .body("name", Matchers.is("Rakesh"));
+        }
+        else
+            System.out.println("Emp ID " + emp_id + " already exists in json server");
     }
 }
