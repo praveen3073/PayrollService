@@ -3,7 +3,10 @@ package com.payrollservice;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -296,5 +299,20 @@ public class PayrollServiceTest {
         }
         else
             System.out.println("Emp ID " + emp_id + " doesn't exist in Json server");
+    }
+
+    @Test
+    public void onRetrievingFromJsonServer_ShouldReturnCorrectStatusCode() {
+        PayrollService payrollService = new PayrollService();
+        Response employeeList = getEmployeeList();
+        JSONArray jsonArray = new JSONArray(employeeList.asString());
+        for(int i=0; i<jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            EmployeePayroll tempEmpObj = new EmployeePayroll(jsonObject.getInt("id"), jsonObject.getString("name"),
+                    jsonObject.getDouble("salary"));
+            payrollService.employeePayrollMap.put(jsonObject.getInt("id"), tempEmpObj);
+        }
+        int statusCode = employeeList.statusCode();
+        Assert.assertEquals(statusCode, 200);
     }
 }
