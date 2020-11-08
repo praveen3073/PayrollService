@@ -1,0 +1,192 @@
+Author: Praveen Satya R V
+Last Edited: 29/10/2020
+
+mysql -u root -p	# Run mysql client
+SHOW DATABASES;		# To see all databases
+
+# UC 1
+CREATE DATABASE payroll_service;	# Create new database
+USE payroll_service;			# Select & use payroll_service
+SELECT DATABASE();			# See current database
+
+# UC 2
+CREATE TABLE employee_payroll					# Create employee_payroll table
+(
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT,	# Employee id, auto increment
+	name VARCHAR(100) NOT NULL,					# Employee name
+	salary DOUBLE NOT NULL,						# Employee salary
+	start DATE NOT NULL,						# Employee start date 
+	PRIMARY KEY(id)								# Employee id as primary key
+);
+
+# UC 3
+# CRUD Operation INSERT on employee_payroll table
+INSERT INTO employee_payroll ( name, salary, start) VALUES
+( 'Rahul', 100000, '2018-03-23'),
+( 'Ganesh', 150000, '2019-05-01'),
+( 'Mani', 200000, '2018-12-13');
+
+# UC 4
+# Retrieve all data from employee_payroll table
+SELECT * FROM employee_payroll;
+
+# UC 5
+# Retrieve particular data from employee_payroll table
+SELECT * FROM employee_payroll					# Retrieve records with name Mani 
+WHERE name = 'Mani'; 
+SELECT * FROM employee_payroll					# Retrieve records with start date in given time frame
+WHERE start BETWEEN 
+CAST('2018-12-31' AS DATE) AND DATE(NOW());
+
+# UC 6
+ALTER TABLE employee_payroll					# Add new field gender to table
+ADD gender CHAR(1)
+AFTER name;
+
+UPDATE employee_payroll							# Set gender 'M' for employees Rahul & Ganesh 
+SET gender = 'M'
+WHERE name = 'Rahul' OR
+name = 'Ganesh';
+
+UPDATE employee_payroll							# Set gender 'F' for employee Mani 
+SET gender = 'F'
+WHERE name = 'Mani';
+
+# UC 7
+# Use database functions to find sum, average, min, max and
+# count of salaries of male and female employees
+SELECT gender, SUM(salary),
+AVG(salary), MIN(salary),
+MAX(salary), COUNT(salary)
+FROM employee_payroll
+GROUP BY gender;
+
+# UC 8
+# Extend employee_payroll table to add employee phone, address & department
+ALTER TABLE employee_payroll					# Adding phone no field		
+ADD phone VARCHAR(250) AFTER name;
+ALTER TABLE employee_payroll					# Adding address field
+ADD address VARCHAR(250) NOT NULL 
+DEFAULT 'TBD' AFTER phone;
+ALTER TABLE employee_payroll					# Adding department field
+ADD department VARCHAR(150) NOT NULL 
+AFTER address;
+
+# UC 9
+ALTER TABLE employee_payroll					# Rename field salary to basic_pay 
+RENAME COLUMN salary
+TO basic_pay;
+ALTER TABLE employee_payroll					# Adding field deductions
+ADD deductions DOUBLE NOT NULL
+AFTER basic_pay;
+ALTER TABLE employee_payroll					# Adding field taxable_pay
+ADD taxable_pay DOUBLE NOT NULL
+AFTER deductions;
+ALTER TABLE employee_payroll					# Adding field income tax 
+ADD tax DOUBLE NOT NULL
+AFTER taxable_pay;
+ALTER TABLE employee_payroll					# Adding field net_pay
+ADD net_pay DOUBLE NOT NULL 
+AFTER tax;
+
+# UC 10
+# Make an employee (Mani) part of two departments
+UPDATE employee_payroll												# Updating department field 
+SET department = 'Sales'
+WHERE name = 'Mani';
+INSERT INTO employee_payroll ( name, department,					# Adding same employee in marketing department
+ basic_pay, deductions, taxable_pay, tax, net_pay, start) VALUES
+( 'Mani', 'Marketing', 200000, 0, 0, 0, 0, '2018-12-13');
+# ER diagram attached seperately
+
+# UC 11
+# Implement ER diagram & do UC7 again
+DROP TABLE employee_payroll;											# Drop table to normalize
+CREATE TABLE company 
+(
+	company_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	company_name VARCHAR(100) NOT NULL
+);
+CREATE TABLE department 								# Create departments
+(
+	department_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	department_name VARCHAR(100) NOT NULL
+);
+CREATE TABLE employee									# Create employees
+(
+	company_id INT UNSIGNED,
+	emp_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	name VARCHAR(100) NOT NULL,
+	phone VARCHAR(20),
+	address VARCHAR(100),
+	gender CHAR(1),
+	PRIMARY KEY (emp_id),
+	FOREIGN KEY (company_id) REFERENCES company(company_id)
+);
+CREATE TABLE payroll									# Create employee payroll
+(
+	emp_id INT UNSIGNED UNIQUE,							# UNIQUE for one to one relation
+	basic_pay DOUBLE,
+	deductions DOUBLE,
+	taxable_pay DOUBLE,
+	tax DOUBLE,
+	net_pay DOUBLE,
+	FOREIGN KEY (emp_id) REFERENCES employee(emp_id)
+);
+CREATE TABLE employee_department						# Bridge table for many to many relation
+(														# between employee & department
+	emp_id INT UNSIGNED,
+	department_id INT UNSIGNED,
+	FOREIGN KEY (emp_id) REFERENCES employee(emp_id),
+	FOREIGN KEY (department_id) REFERENCES department(department_id),
+	UNIQUE(emp_id, department_id)
+);
+INSERT INTO company (company_name) VALUES				# Insert values after normalization
+('Abc');
+INSERT INTO employee ( company_id, name,				# Insert employee 
+phone, address, gender) VALUES
+( 1, 'Rahul', '8372635446', 'A Street', 'M'),
+( 1, 'Ganesh', '1243526112', 'B Street', 'M'),
+( 1, 'Mani', '9453612001', 'C Street', 'F');
+INSERT INTO department (department_name) VALUES			# Insert departments
+('Sales'),
+('Marketing');
+INSERT INTO employee_department							# emp_id = 6, aka 'Mani' 
+(emp_id, department_id) VALUES							# added to departments
+(6, 1),													# sales & marketing
+(6, 2);
+INSERT INTO payroll (emp_id, basic_pay) VALUES			# Insert employee salaries
+(4, 100000),
+(5, 200000),
+(6, 150000);
+SELECT employee.gender, SUM(p.basic_pay),				# Repeat UC 7
+AVG(p.basic_pay), MIN(p.basic_pay),						# Perform function operations
+MAX(p.basic_pay), COUNT(p.basic_pay)					# grouped by gender
+FROM 
+(SELECT emp_id, basic_pay FROM payroll) p,
+ employee
+WHERE employee.emp_id = p.emp_id
+GROUP BY employee.gender;
+
+# UC12
+# Repeat operations done in UC 4 & UC 5
+ALTER TABLE employee ADD start date						# Add start date to employee
+NOT NULL AFTER gender;
+UPDATE employee SET start = '2018-02-23'				# Update start date for employees
+WHERE name = 'Rahul';
+UPDATE employee SET start = '2019-03-08'
+WHERE name = 'Ganesh';
+UPDATE employee SET start = '2020-07-17'
+WHERE name = 'Mani';
+
+SELECT e.emp_id, e.name, e.phone,						# UC 4
+e.address, e.gender, e.start, p.basic_pay				# Retreive employee details
+FROM employee e,
+payroll p
+WHERE e.emp_id = p.emp_id;									
+SELECT e.emp_id, e.name, e.phone,						# UC 5
+e.address, e.gender, e.start, p.basic_pay				# Retreive employee details between start dates
+FROM employee e,
+payroll p
+WHERE e.emp_id = p.emp_id AND
+e.start BETWEEN CAST('2019-01-01' AS DATE) AND DATE(NOW());									

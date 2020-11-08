@@ -105,4 +105,157 @@ public class PayrollService {
             }
         }
     }
+
+    public void createRecordInDB(int company_id, String name, String phone, String address, char gender, String startDate, double basic_pay) throws RecordAlreadyExistsException, RecordsNotFoundException {
+        CrudOperations crudOperations = new CrudOperations();
+        crudOperations.sync(this);
+        if (!this.employeePayrollMap.containsKey(this.getEmpIdByName("Shalu")))
+            crudOperations.createRecord(this, company_id, name, phone, address, gender, startDate, basic_pay);
+        else
+            throw new RecordAlreadyExistsException("The record with name " + name + " already exists in DB");
+    }
+
+    public double updateSalaryForEmployee(String name, double newSalary) throws RecordsNotFoundException {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            CrudOperations crudOperations = new CrudOperations();
+            crudOperations.updateSalaryByName(this, name, newSalary);
+            int emp_id = this.getEmpIdByName("Shalu");
+            String query = "select basic_pay from payroll where emp_id = " + emp_id;
+            ResultSet resultSet = stmt.executeQuery(query);
+            resultSet.next();
+            return resultSet.getDouble("basic_pay");
+        } catch (SQLException | RecordsNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+        throw new RecordsNotFoundException("The record for " + name + "doesn't exist in DB");
+    }
+
+    public int getEmployeeCountBetweenDatesInLocalEmployeeMap(String dateLowerLimit, String dateUpperLimit) {
+        CrudOperations crudOperations = new CrudOperations();
+        int count = 0;
+        crudOperations.readByDate(this, "2018-01-01", "2019-01-01");
+        for (EmployeePayroll employeePayroll : this.employeePayrollMap.values()) {
+            if (employeePayroll.start.compareTo("2018-01-01") > 0 &&
+                    employeePayroll.start.compareTo("2019-01-01") < 0)
+                count++;
+        }
+        return count;
+    }
+
+    public int getEmployeeCountBetweenDatesInDB(String dateLowerLimit, String dateUpperLimit) {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query = "select count(emp_id) from employee where start between cast('2018-01-01' as date) and cast('2019-01-01' as date)";
+            ResultSet resultSet = stmt.executeQuery(query);
+            resultSet.next();
+            return resultSet.getInt("count(emp_id)");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getAverageFemaleSalaryInLocalEmployeeMap() {
+        try {
+            CrudOperations crudOperations = new CrudOperations();
+            crudOperations.readSalaryStatsByGender(this);
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            double avgSalaryFemale;
+            double totalSalaryFemale = 0;
+            int countFemale = 0;
+            for (EmployeePayroll employeePayroll : this.employeePayrollMap.values()) {
+                if (employeePayroll.gender == 'F' || employeePayroll.gender == 'f') {
+                    totalSalaryFemale += employeePayroll.basic_pay;
+                    countFemale++;
+                }
+            }
+            return totalSalaryFemale / countFemale;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getAverageMaleSalaryInLocalEmployeeMap() {
+        try {
+            CrudOperations crudOperations = new CrudOperations();
+            crudOperations.readSalaryStatsByGender(this);
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            double avgSalaryMale;
+            double totalSalaryMale = 0;
+            int countMale = 0;
+            for (EmployeePayroll employeePayroll : this.employeePayrollMap.values()) {
+                if (employeePayroll.gender == 'M' || employeePayroll.gender == 'm') {
+                    totalSalaryMale += employeePayroll.basic_pay;
+                    countMale++;
+                }
+            }
+            return totalSalaryMale / countMale;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getAverageFemaleSalaryInDB() {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query = "SELECT employee.gender, " +
+                    "AVG(p.basic_pay) as avg " +
+                    "FROM " +
+                    "(SELECT emp_id, basic_pay FROM payroll) p, " +
+                    "employee " +
+                    "WHERE employee.emp_id = p.emp_id " +
+                    "and gender = 'F'";
+            ResultSet resultSet = stmt.executeQuery(query);
+            resultSet.next();
+            return resultSet.getDouble("avg");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getAverageMaleSalaryInDB() {
+        try {
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query = "SELECT employee.gender, " +
+                    "AVG(p.basic_pay) as avg " +
+                    "FROM " +
+                    "(SELECT emp_id, basic_pay FROM payroll) p, " +
+                    "employee " +
+                    "WHERE employee.emp_id = p.emp_id " +
+                    "and gender = 'M'";
+            ResultSet resultSet = stmt.executeQuery(query);
+            resultSet.next();
+            return resultSet.getDouble("avg");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public void deleteEmployeeRecordsFromDB(ArrayList<String> names) {
+        try {
+            CrudOperations crudOperations = new CrudOperations();
+            Connection con = JDBCConnection.getInstance().getConnection();
+            Statement stmt = con.createStatement();
+            String query;
+            for(String name : names) {
+                query = "delete from employee where name = '"+ name +"'";
+                stmt.executeUpdate(query);
+                if(con.getAutoCommit() == false)
+                    con.commit();
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }

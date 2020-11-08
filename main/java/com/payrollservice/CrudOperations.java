@@ -159,7 +159,8 @@ public class CrudOperations {
             payrollService.employeePayrollMap.remove(emp_id);               // Remove EmployeePayroll Object from map
             String query = "update employee set is_active = false where emp_id = " + emp_id;              // Set is_active to false
             stmt.executeUpdate(query);
-            con.commit();
+            if(con.getAutoCommit() == false)
+                con.commit();
         } catch (RecordsNotFoundException | SQLException e) {
             e.printStackTrace();
         }
